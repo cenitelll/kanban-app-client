@@ -2,6 +2,8 @@ import axios from "axios";
 import queryString from "query-string";
 
 const baseUrl = "https://kanban-app-server-zrjq.vercel.app/api/v1/";
+//https://kanban-app-server-zrjq.vercel.app/api/v1/
+//http://127.0.0.1:5000/api/v1/
 const getToken = () => localStorage.getItem("token");
 
 const axiosClient = axios.create({

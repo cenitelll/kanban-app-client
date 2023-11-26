@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import boardApi from "../../api/boardApi";
 import { setBoards } from "../../redux/features/boardSlice";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+// import FavouriteList from "./FavouriteList";
 
 const Sidebar = () => {
     const user = useSelector((state) => state.user.value);
@@ -52,7 +53,32 @@ const Sidebar = () => {
         navigate("/login");
     };
 
-    const onDragEnd = () => {};
+    const onDragEnd = async ({ source, destination }) => {
+        const newList = [...boards];
+        const [removed] = newList.splice(source.index, 1);
+        newList.splice(destination.index, 0, removed);
+
+        const activeItem = newList.findIndex((e) => e.id === boardId);
+        setActiveIndex(activeItem);
+        dispatch(setBoards(newList));
+
+        try {
+            await boardApi.updatePosition({ boards: newList });
+        } catch (err) {
+            alert(err);
+        }
+    };
+
+    const addBoard = async () => {
+        try {
+            const res = await boardApi.create();
+            const newList = [res, ...boards];
+            dispatch(setBoards(newList));
+            navigate(`/boards/${res.id}`);
+        } catch (err) {
+            alert(err);
+        }
+    };
 
     return (
         <Drawer
@@ -122,7 +148,7 @@ const Sidebar = () => {
                         <Typography variant="body2" fontWeight="700">
                             Private
                         </Typography>
-                        <IconButton>
+                        <IconButton onClick={addBoard}>
                             <AddBoxOutlinedIcon fontSize="small" />
                         </IconButton>
                     </Box>
@@ -174,6 +200,7 @@ const Sidebar = () => {
                                         )}
                                     </Draggable>
                                 ))}
+                                {provided.placeholder}
                             </div>
                         )}
                     </Droppable>
