@@ -12,6 +12,7 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import sectionApi from "../../api/sectionApi";
+import taskApi from "../../api/taskApi";
 
 let timer;
 const timeout = 5;
@@ -24,7 +25,46 @@ const Kanban = (props) => {
         setData(props.data);
     }, [props.data]);
 
-    const onDragEnd = () => {};
+    const onDragEnd = async ({ source, destination }) => {
+        if (!destination) return;
+        const sourceColIndex = data.findIndex(
+            (e) => e.id === source.droppableId
+        );
+        const destinationColIndex = data.findIndex(
+            (e) => e.id === destination.droppableId
+        );
+        const sourceCol = data[sourceColIndex];
+        const destinationCol = data[destinationColIndex];
+
+        const sourceSectionId = sourceCol.id;
+        const destinationSectionId = destinationCol.id;
+
+        const sourceTasks = [...sourceCol.tasks];
+        const destinationTasks = [...destinationCol.tasks];
+
+        if (source.droppableId !== destination.droppableId) {
+            const [removed] = sourceTasks.splice(source.index, 1);
+            destinationTasks.splice(destination.index, 0, removed);
+            data[sourceColIndex].tasks = sourceTasks;
+            data[destinationColIndex].tasks = destinationTasks;
+        } else {
+            const [removed] = destinationTasks.splice(source.index, 1);
+            destinationTasks.splice(destination.index, 0, removed);
+            data[destinationColIndex].tasks = destinationTasks;
+        }
+
+        try {
+            await taskApi.updatePosition(boardId, {
+                resourceList: sourceTasks,
+                destinationList: destinationTasks,
+                resourceSectionId: sourceSectionId,
+                destinationSectionId: destinationSectionId,
+            });
+            setData(data);
+        } catch (err) {
+            alert(err);
+        }
+    };
 
     const createSection = async () => {
         try {
@@ -63,7 +103,17 @@ const Kanban = (props) => {
         }, timeout);
     };
 
-    const createTask = async (sectionId) => {};
+    const createTask = async (sectionId) => {
+        try {
+            const task = await taskApi.create(boardId, { sectionId });
+            const newData = [...data];
+            const index = newData.findIndex((e) => e.id === sectionId);
+            newData[index].tasks.unshift(task);
+            setData(newData);
+        } catch (err) {
+            alert(err);
+        }
+    };
 
     return (
         <>
