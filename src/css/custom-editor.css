@@ -1,5 +1,13 @@
+:root {
+    --ck-focus-ring: transparent;
+    --ck-inner-shadow: transparent;
+    --ck-color-button-on-background: transparent;
+    --ck-color-button-on-color: white;
+    --ck-color-list-button-on-background: gray;
+}
+
 .ck.ck-editor__main > .ck-editor__editable {
-    background-color: transparent;
+    background: transparent;
     border: none;
     outline: none;
 }
@@ -9,7 +17,7 @@
 }
 
 .ck.ck-toolbar .ck.ck-toolbar__separator {
-    background-color: transparent;
+    background: transparent;
 }
 
 .ck.ck-toolbar.ck-toolbar_grouping {
